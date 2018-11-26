@@ -159,33 +159,110 @@ inline T conditional_return(C condvar, T left, T right)
    }
 
 template<typename T>
-inline T conditional_copy_mem(T value,
-                              T* to,
-                              const T* from0,
-                              const T* from1,
-                              size_t elems)
+class Mask
    {
-   const T mask = CT::expand_mask(value);
+   public:
+      Mask(const Mask<T>& other) = default;
+      Mask<T>& operator=(const Mask<T>& other) = default;
 
-   for(size_t i = 0; i != elems; ++i)
-      {
-      to[i] = CT::select(mask, from0[i], from1[i]);
-      }
+      static Mask<T> is_nonzero(T v)
+         {
+         return Mask<T>(expand_mask(v));
+         }
 
+      static Mask<T> is_zero(T x)
+         {
+         return Mask<T>(is_zero(x));
+         }
+
+      static Mask<T> is_equal(T x, T y)
+         {
+         return Mask<T>(is_equal(x, y));
+         }
+
+      static Mask<T> is_less(T x, T y)
+         {
+         return Mask<T>(is_less(x, y));
+         }
+
+      Mask<T>& operator&=(Mask<T> o) { m_mask &= o.value(); return (*this); }
+      Mask<T>& operator^=(Mask<T> o) { m_mask ^= o.value(); return (*this); }
+      Mask<T>& operator|=(Mask<T> o) { m_mask |= o.value(); return (*this); }
+
+      friend Mask<T> operator&(Mask<T> x, Mask<T> y)
+         {
+         return Mask<T>(x.value() & y.value());
+         }
+
+      friend Mask<T> operator^(Mask<T> x, Mask<T> y)
+         {
+         return Mask<T>(x.value() ^ y.value());
+         }
+
+      friend Mask<T> operator|(Mask<T> x, Mask<T> y)
+         {
+         return Mask<T>(x.value() | y.value());
+         }
+
+      Mask<T> operator~() const
+         {
+         return Mask<T>(~value());
+         }
+
+      /**
+      * Return x if the mask is set, or otherwise zero
+      */
+      T if_set_return(T x) const
+         {
+         return m_mask & x;
+         }
+
+      T select(T x, T y) const { return CT::select(m_mask, x, y); }
+
+      Mask<T> select_mask(Mask<T> x, Mask<T> y) const
+         {
+         return Mask<T>(select(x.value(), y.value()));
+         }
+
+      void select_n(T output[], const T x[], const T y[], size_t len) const
+         {
+         for(size_t i = 0; i != len; ++i)
+            output[i] = this->select(x[i], y[i]);
+         }
+
+      T value() const
+         {
+         return m_mask;
+         }
+
+   private:
+      Mask(T m) : m_mask(m) {}
+
+      T m_mask;
+   };
+
+template<typename T>
+inline Mask<T> conditional_copy_mem(T cnd,
+                                    T* to,
+                                    const T* from0,
+                                    const T* from1,
+                                    size_t elems)
+   {
+   const auto mask = CT::Mask<T>::is_nonzero(cnd);
+   mask.select_n(to, from0, from1, elems);
    return mask;
    }
 
 template<typename T>
-inline void cond_zero_mem(T cond,
+inline void cond_zero_mem(T cnd,
                           T* array,
                           size_t elems)
    {
-   const T mask = CT::expand_mask(cond);
-   const T zero(0);
+   const auto mask = CT::Mask<T>::is_zero(cnd);
 
    for(size_t i = 0; i != elems; ++i)
       {
-      array[i] = CT::select(mask, zero, array[i]);
+      array[i] = mask.if_set_return(array[i]);
       }
    }
 

@@ -166,6 +166,13 @@ class Mask
          return Mask<T>(CT::is_zero(x));
          }
 
+      template<typename U>
+      static Mask<T> is_zero(U x)
+         {
+         static_assert(sizeof(U) > sizeof(T), "sizes ok");
+         return Mask<T>(static_cast<T>(CT::is_zero<U>(x)));
+         }
+
       static Mask<T> is_nonzero(T v)
          {
          return ~Mask<T>::is_zero(v);

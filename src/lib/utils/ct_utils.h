@@ -165,6 +165,21 @@ class Mask
       Mask(const Mask<T>& other) = default;
       Mask<T>& operator=(const Mask<T>& other) = default;
 
+      template<typename U>
+      Mask(Mask<U> o) : m_mask(CT::expand_mask(o.value()))
+         {
+         }
+
+      static Mask<T> set()
+         {
+         return Mask<T>(~0);
+         }
+
+      static Mask<T> cleared()
+         {
+         return Mask<T>(0);
+         }
+
       static Mask<T> is_nonzero(T v)
          {
          return Mask<T>(expand_mask(v));
@@ -172,12 +187,12 @@ class Mask
 
       static Mask<T> is_zero(T x)
          {
-         return Mask<T>(is_zero(x));
+         return Mask<T>(CT::is_zero(x));
          }
 
       static Mask<T> is_equal(T x, T y)
          {
-         return Mask<T>(is_equal(x, y));
+         return Mask<T>(CT::is_equal(x, y));
          }
 
       static Mask<T> is_less(T x, T y)
@@ -215,6 +230,14 @@ class Mask
       T if_set_return(T x) const
          {
          return m_mask & x;
+         }
+
+      /**
+      * Return x if the mask is cleared, or otherwise zero
+      */
+      T if_not_set_return(T x) const
+         {
+         return ~m_mask & x;
          }
 
       T select(T x, T y) const { return CT::select(m_mask, x, y); }

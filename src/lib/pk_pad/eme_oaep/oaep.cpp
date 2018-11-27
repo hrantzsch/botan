@@ -105,37 +105,37 @@ oaep_find_delim(uint8_t& valid_mask,
    CT::poison(input, input_len);
 
    size_t delim_idx = 2 * hlen;
-   uint8_t waiting_for_delim = 0xFF;
-   uint8_t bad_input = 0;
+   CT::Mask<uint8_t> waiting_for_delim = CT::Mask<uint8_t>::set();
+   CT::Mask<uint8_t> bad_input = CT::Mask<uint8_t>::cleared();
 
    for(size_t i = delim_idx; i < input_len; ++i)
       {
-      const uint8_t zero_m = CT::is_zero<uint8_t>(input[i]);
-      const uint8_t one_m = CT::is_equal<uint8_t>(input[i], 1);
+      const auto zero_m = CT::Mask<uint8_t>::is_zero(input[i]);
+      const auto one_m = CT::Mask<uint8_t>::is_equal(input[i], 1);
 
-      const uint8_t add_m = waiting_for_delim & zero_m;
+      const auto add_m = waiting_for_delim & zero_m;
 
       bad_input |= waiting_for_delim & ~(zero_m | one_m);
 
-      delim_idx += CT::select<uint8_t>(add_m, 1, 0);
+      delim_idx += add_m.if_set_return(1);
 
       waiting_for_delim &= zero_m;
       }
 
    // If we never saw any non-zero byte, then it's not valid input
    bad_input |= waiting_for_delim;
-   bad_input |= CT::is_equal<uint8_t>(constant_time_compare(&input[hlen], Phash.data(), hlen), false);
+   bad_input |= CT::Mask<uint8_t>::is_equal(constant_time_compare(&input[hlen], Phash.data(), hlen), false);
 
-   delim_idx &= ~CT::expand_mask<size_t>(bad_input);
+   delim_idx &= ~CT::expand_mask<size_t>(bad_input.value());
 
    CT::unpoison(input, input_len);
    CT::unpoison(&bad_input, 1);
    CT::unpoison(&delim_idx, 1);
 
-   valid_mask = ~bad_input;
+   valid_mask = (~bad_input).value();
 
    secure_vector<uint8_t> output(input + delim_idx + 1, input + input_len);
-   CT::cond_zero_mem(bad_input, output.data(), output.size());
+   CT::cond_zero_mem(bad_input.value(), output.data(), output.size());
 
    return output;
    }

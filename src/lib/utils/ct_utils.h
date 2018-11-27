@@ -115,18 +115,6 @@ inline constexpr T select(T mask, T from0, T from1)
    }
 
 template<typename T>
-inline constexpr T select2(T mask0, T val0, T mask1, T val1, T val2)
-   {
-   return select<T>(mask0, val0, select<T>(mask1, val1, val2));
-   }
-
-template<typename T>
-inline constexpr T select3(T mask0, T val0, T mask1, T val1, T mask2, T val2, T val3)
-   {
-   return select2<T>(mask0, val0, mask1, val1, select<T>(mask2, val2, val3));
-   }
-
-template<typename T>
 inline constexpr T is_equal(T x, T y)
    {
    return is_zero<T>(x ^ y);
@@ -299,12 +287,12 @@ inline secure_vector<uint8_t> strip_leading_zeros(const uint8_t in[], size_t len
    {
    size_t leading_zeros = 0;
 
-   uint8_t only_zeros = 0xFF;
+   auto only_zeros = Mask<uint8_t>::set();
 
    for(size_t i = 0; i != length; ++i)
       {
-      only_zeros = only_zeros & CT::is_zero<uint8_t>(in[i]);
-      leading_zeros += CT::select<uint8_t>(only_zeros, 1, 0);
+      only_zeros &= CT::Mask<uint8_t>::is_zero(in[i]);
+      leading_zeros += only_zeros.if_set_return(1);
       }
 
    return secure_vector<uint8_t>(in + leading_zeros, in + length);

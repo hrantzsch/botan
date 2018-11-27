@@ -393,13 +393,18 @@ void BigInt::ct_cond_assign(bool predicate, BigInt& other)
    const size_t t_words = size();
    const size_t o_words = other.size();
 
+   if(o_words < t_words)
+      grow_to(o_words);
+
    const size_t r_words = std::max(t_words, o_words);
 
-   const word mask = CT::expand_mask<word>(predicate);
+   const auto mask = CT::Mask<word>::expand(predicate);
 
    for(size_t i = 0; i != r_words; ++i)
       {
-      this->set_word_at(i, CT::select<word>(mask, other.word_at(i), this->word_at(i)));
+      const word o_word = other.word_at(i);
+      const word t_word = this->word_at(i);
+      this->set_word_at(i, mask.select(o_word, t_word));
       }
    }
 
@@ -430,10 +435,13 @@ void BigInt::const_time_lookup(secure_vector<word>& output,
       BOTAN_ASSERT(vec[i].size() >= words,
                    "Word size as expected in const_time_lookup");
 
-      const word mask = CT::is_equal(i, idx);
+      const auto mask = CT::Mask<word>::is_equal(i, idx);
 
       for(size_t w = 0; w != words; ++w)
-         output[w] |= CT::select<word>(mask, vec[i].word_at(w), 0);
+         {
+         const word viw = vec[i].word_at(w);
+         output[w] = mask.if_set_return(viw);
+         }
       }
 
    CT::unpoison(idx);

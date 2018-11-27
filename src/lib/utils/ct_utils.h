@@ -162,6 +162,8 @@ template<typename T>
 class Mask
    {
    public:
+      static_assert(std::is_unsigned<T>::value, "CT::Mask only defined for unsigned integer types");
+
       Mask(const Mask<T>& other) = default;
       Mask<T>& operator=(const Mask<T>& other) = default;
 
@@ -180,6 +182,11 @@ class Mask
          return Mask<T>(0);
          }
 
+      static Mask<T> expand(T v)
+         {
+         return Mask<T>(expand_mask(v));
+         }
+
       static Mask<T> is_nonzero(T v)
          {
          return Mask<T>(expand_mask(v));
@@ -195,9 +202,24 @@ class Mask
          return Mask<T>(CT::is_equal(x, y));
          }
 
-      static Mask<T> is_less(T x, T y)
+      static Mask<T> is_lt(T x, T y)
          {
          return Mask<T>(CT::is_less(x, y));
+         }
+
+      static Mask<T> is_gt(T x, T y)
+         {
+         return Mask<T>::is_lt(y, x);
+         }
+
+      static Mask<T> is_lte(T x, T y)
+         {
+         return ~Mask<T>::is_gt(x, y);
+         }
+
+      static Mask<T> is_gte(T x, T y)
+         {
+         return ~Mask<T>::is_lt(x, y);
          }
 
       Mask<T>& operator&=(Mask<T> o) { m_mask &= o.value(); return (*this); }

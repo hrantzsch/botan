@@ -71,12 +71,12 @@ secure_vector<uint8_t> EME_PKCS1v15::unpad(uint8_t& valid_mask,
 
       delim_idx += seen_zero_m.if_not_set_return(1);
 
-      bad_input_m |= is_zero_m & CT::Mask<uint8_t>(CT::Mask<size_t>::is_less(i, 10));
+      bad_input_m |= is_zero_m & CT::Mask<uint8_t>(CT::Mask<size_t>::is_lt(i, 10));
       seen_zero_m |= is_zero_m;
       }
 
    bad_input_m |= ~seen_zero_m;
-   bad_input_m |= CT::Mask<uint8_t>(CT::Mask<size_t>::is_less(delim_idx, 8));
+   bad_input_m |= CT::Mask<uint8_t>(CT::Mask<size_t>::is_lt(delim_idx, 8));
 
    CT::unpoison(in, inlen);
    CT::unpoison(bad_input_m);

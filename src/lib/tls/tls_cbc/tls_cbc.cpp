@@ -235,17 +235,17 @@ uint16_t check_tls_cbc_padding(const uint8_t record[], size_t record_len)
    const uint8_t pad_byte = record[record_len-1];
    const uint16_t pad_bytes = 1 + pad_byte;
 
-   uint16_t pad_invalid = CT::is_less<uint16_t>(rec16, pad_bytes);
+   auto pad_invalid = CT::Mask<uint16_t>::is_lt(rec16, pad_byte);
 
    for(uint16_t i = rec16 - to_check; i != rec16; ++i)
       {
       const uint16_t offset = rec16 - i;
-      const uint16_t in_pad_range = CT::is_lte<uint16_t>(offset, pad_bytes);
-      pad_invalid |= (in_pad_range & (record[i] ^ pad_byte));
+      const auto in_pad_range = CT::Mask<uint16_t>::is_lte(offset, pad_bytes);
+      const auto pad_correct = CT::Mask<uint16_t>::is_equal(record[i], pad_byte);
+      pad_invalid |= in_pad_range & ~pad_correct;
       }
 
-   const uint16_t pad_invalid_mask = CT::expand_mask<uint16_t>(pad_invalid);
-   return CT::select<uint16_t>(pad_invalid_mask, 0, pad_byte + 1);
+   return pad_invalid.if_not_set_return(pad_bytes);
    }
 
 void TLS_CBC_HMAC_AEAD_Decryption::cbc_decrypt_record(uint8_t record_contents[], size_t record_len)

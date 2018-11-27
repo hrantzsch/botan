@@ -49,16 +49,16 @@ void initialize_allocator()
 #endif
    }
 
-bool constant_time_compare(const uint8_t x[],
-                           const uint8_t y[],
-                           size_t len)
+uint8_t ct_compare_u8(const uint8_t x[],
+                      const uint8_t y[],
+                      size_t len)
    {
    volatile uint8_t difference = 0;
 
    for(size_t i = 0; i != len; ++i)
       difference |= (x[i] ^ y[i]);
 
-   return difference == 0;
+   return CT::Mask<uint8_t>::is_zero(difference);
    }
 
 }

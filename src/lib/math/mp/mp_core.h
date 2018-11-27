@@ -591,13 +591,13 @@ inline word bigint_ct_is_lt(const word x[], size_t x_size,
    {
    const size_t common_elems = std::min(x_size, y_size);
 
-   word is_lt = CT::expand_mask<word>(lt_or_equal);
+   auto is_lt = CT::Mask<word>::expand(lt_or_equal);
 
    for(size_t i = 0; i != common_elems; i++)
       {
-      const word eq = CT::is_equal(x[i], y[i]);
-      const word lt = CT::is_less(x[i], y[i]);
-      is_lt = CT::select(eq, is_lt, lt);
+      const auto eq = CT::Mask<word>::is_equal(x[i], y[i]);
+      const auto lt = CT::Mask<word>::is_lt(x[i], y[i]);
+      is_lt = eq.select_mask(is_lt, lt);
       }
 
    if(x_size < y_size)
@@ -606,7 +606,7 @@ inline word bigint_ct_is_lt(const word x[], size_t x_size,
       for(size_t i = x_size; i != y_size; i++)
          mask |= y[i];
       // If any bits were set in high part of y, then is_lt should be forced true
-      is_lt |= ~CT::is_zero(mask);
+      is_lt |= CT::Mask<word>::is_nonzero(mask);
       }
    else if(y_size < x_size)
       {
@@ -615,11 +615,11 @@ inline word bigint_ct_is_lt(const word x[], size_t x_size,
          mask |= x[i];
 
       // If any bits were set in high part of x, then is_lt should be false
-      is_lt &= CT::is_zero(mask);
+      is_lt &= CT::Mask<word>::is_zero(mask);
       }
 
    CT::unpoison(is_lt);
-   return is_lt;
+   return is_lt.value();
    }
 
 inline word bigint_ct_is_eq(const word x[], size_t x_size,

@@ -126,12 +126,6 @@ inline constexpr T select3(T mask0, T val0, T mask1, T val1, T mask2, T val2, T 
    return select2<T>(mask0, val0, mask1, val1, select<T>(mask2, val2, val3));
    }
 
-template<typename PredT, typename ValT>
-inline constexpr ValT val_or_zero(PredT pred_val, ValT val)
-   {
-   return select(CT::expand_mask<ValT>(pred_val), val, static_cast<ValT>(0));
-   }
-
 template<typename T>
 inline constexpr T is_equal(T x, T y)
    {
@@ -148,14 +142,6 @@ template<typename T>
 inline constexpr T is_lte(T a, T b)
    {
    return CT::is_less(a, b) | CT::is_equal(a, b);
-   }
-
-template<typename C, typename T>
-inline T conditional_return(C condvar, T left, T right)
-   {
-   const T val = CT::select(CT::expand_mask<T>(condvar), left, right);
-   CT::unpoison(val);
-   return val;
    }
 
 template<typename T>
@@ -187,14 +173,14 @@ class Mask
          return Mask<T>(expand_mask(v));
          }
 
-      static Mask<T> is_nonzero(T v)
-         {
-         return Mask<T>(expand_mask(v));
-         }
-
       static Mask<T> is_zero(T x)
          {
          return Mask<T>(CT::is_zero(x));
+         }
+
+      static Mask<T> is_nonzero(T v)
+         {
+         return ~Mask<T::is_nonzero(v);
          }
 
       static Mask<T> is_equal(T x, T y)

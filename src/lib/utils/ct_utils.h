@@ -180,7 +180,7 @@ class Mask
 
       static Mask<T> is_nonzero(T v)
          {
-         return ~Mask<T::is_nonzero(v);
+         return ~Mask<T>::is_zero(v);
          }
 
       static Mask<T> is_equal(T x, T y)

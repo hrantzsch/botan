@@ -5,6 +5,7 @@
 */
 
 #include <botan/mem_ops.h>
+#include <botan/internal/ct_utils.h>
 #include <cstdlib>
 #include <new>
 
@@ -58,7 +59,7 @@ uint8_t ct_compare_u8(const uint8_t x[],
    for(size_t i = 0; i != len; ++i)
       difference |= (x[i] ^ y[i]);
 
-   return CT::Mask<uint8_t>::is_zero(difference);
+   return CT::Mask<uint8_t>::is_zero(difference).value();
    }
 
 }

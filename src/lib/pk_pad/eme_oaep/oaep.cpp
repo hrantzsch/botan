@@ -124,7 +124,7 @@ oaep_find_delim(uint8_t& valid_mask,
 
    // If we never saw any non-zero byte, then it's not valid input
    bad_input |= waiting_for_delim;
-   bad_input |= ~ct_compare_u8(&input[hlen], Phash.data(), hlen);
+   bad_input |= CT::Mask<uint8_t>::is_zero(ct_compare_u8(&input[hlen], Phash.data(), hlen));
 
    //delim_idx &= ~bad_input.resize_mask_to<size_t>();
    delim_idx &= ~CT::expand_mask<size_t>(bad_input.value());

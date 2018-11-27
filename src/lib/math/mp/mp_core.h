@@ -541,19 +541,20 @@ inline int32_t bigint_cmp(const word x[], size_t x_size,
    {
    static_assert(sizeof(word) >= sizeof(uint32_t), "Size assumption");
 
-   const uint32_t LT = static_cast<uint32_t>(-1);
-   const uint32_t EQ = 0;
-   const uint32_t GT = 1;
+   const word LT = static_cast<word>(-1);
+   const word EQ = 0;
+   const word GT = 1;
 
    const size_t common_elems = std::min(x_size, y_size);
 
-   uint32_t result = EQ; // until found otherwise
+   word result = EQ; // until found otherwise
 
    for(size_t i = 0; i != common_elems; i++)
       {
-      const word is_eq = CT::is_equal(x[i], y[i]);
-      const word is_lt = CT::is_less(x[i], y[i]);
-      result = CT::select<uint32_t>(is_eq, result, CT::select<uint32_t>(is_lt, LT, GT));
+      const auto is_eq = CT::Mask<word>::is_equal(x[i], y[i]);
+      const auto is_lt = CT::Mask<word>::is_lt(x[i], y[i]);
+
+      result = is_eq.select(result, is_lt.select(LT, GT));
       }
 
    if(x_size < y_size)
@@ -563,7 +564,7 @@ inline int32_t bigint_cmp(const word x[], size_t x_size,
          mask |= y[i];
 
       // If any bits were set in high part of y, then x < y
-      result = CT::select<uint32_t>(CT::is_zero(mask), result, LT);
+      result = CT::Mask<word>::is_zero(mask).select(result, LT);
       }
    else if(y_size < x_size)
       {
@@ -572,7 +573,7 @@ inline int32_t bigint_cmp(const word x[], size_t x_size,
          mask |= x[i];
 
       // If any bits were set in high part of x, then x > y
-      result = CT::select<uint32_t>(CT::is_zero(mask), result, GT);
+      result = CT::Mask<word>::is_zero(mask).select(result, GT);
       }
 
    CT::unpoison(result);

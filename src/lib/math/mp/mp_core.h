@@ -30,14 +30,14 @@ const word MP_WORD_MAX = MP_WORD_MASK;
 */
 inline void bigint_cnd_swap(word cnd, word x[], word y[], size_t size)
    {
-   const word mask = CT::expand_mask(cnd);
+   const auto mask = CT::Mask<word>::is_nonzero(cnd);
 
    for(size_t i = 0; i != size; ++i)
       {
       const word a = x[i];
       const word b = y[i];
-      x[i] = CT::select(mask, b, a);
-      y[i] = CT::select(mask, a, b);
+      x[i] = mask.select(b, a);
+      y[i] = mask.select(a, b);
       }
    }
 
@@ -46,7 +46,7 @@ inline word bigint_cnd_add(word cnd, word x[], word x_size,
    {
    BOTAN_ASSERT(x_size >= y_size, "Expected sizes");
 
-   const word mask = CT::expand_mask(cnd);
+   const auto mask = CT::Mask<word>::is_nonzero(cnd);
 
    word carry = 0;
 
@@ -56,24 +56,22 @@ inline word bigint_cnd_add(word cnd, word x[], word x_size,
    for(size_t i = 0; i != blocks; i += 8)
       {
       carry = word8_add3(z, x + i, y + i, carry);
-
-      for(size_t j = 0; j != 8; ++j)
-         x[i+j] = CT::select(mask, z[j], x[i+j]);
+      mask.select_n(x + i, z, x + i, 8);
       }
 
    for(size_t i = blocks; i != y_size; ++i)
       {
       z[0] = word_add(x[i], y[i], &carry);
-      x[i] = CT::select(mask, z[0], x[i]);
+      x[i] = mask.select(z[0], x[i]);
       }
 
    for(size_t i = y_size; i != x_size; ++i)
       {
       z[0] = word_add(x[i], 0, &carry);
-      x[i] = CT::select(mask, z[0], x[i]);
+      x[i] = mask.select(z[0], x[i]);
       }
 
-   return carry & mask;
+   return mask.if_set_return(carry);
    }
 
 /*
@@ -95,7 +93,7 @@ inline word bigint_cnd_sub(word cnd,
    {
    BOTAN_ASSERT(x_size >= y_size, "Expected sizes");
 
-   const word mask = CT::expand_mask(cnd);
+   const auto mask = CT::Mask<word>::is_nonzero(cnd);
 
    word carry = 0;
 
@@ -105,24 +103,22 @@ inline word bigint_cnd_sub(word cnd,
    for(size_t i = 0; i != blocks; i += 8)
       {
       carry = word8_sub3(z, x + i, y + i, carry);
-
-      for(size_t j = 0; j != 8; ++j)
-         x[i+j] = CT::select(mask, z[j], x[i+j]);
+      mask.select_n(x + i, z, x + i, 8);
       }
 
    for(size_t i = blocks; i != y_size; ++i)
       {
       z[0] = word_sub(x[i], y[i], &carry);
-      x[i] = CT::select(mask, z[0], x[i]);
+      x[i] = mask.select(z[0], x[i]);
       }
 
    for(size_t i = y_size; i != x_size; ++i)
       {
       z[0] = word_sub(x[i], 0, &carry);
-      x[i] = CT::select(mask, z[0], x[i]);
+      x[i] = mask.select(z[0], x[i]);
       }
 
-   return carry & mask;
+   return mask.if_set_return(carry);
    }
 
 /*
@@ -142,7 +138,7 @@ inline word bigint_cnd_sub(word cnd, word x[], const word y[], size_t size)
 *
 * Mask must be either 0 or all 1 bits
 */
-inline void bigint_cnd_addsub(word mask, word x[], const word y[], size_t size)
+inline void bigint_cnd_addsub(CT::Mask<word> mask, word x[], const word y[], size_t size)
    {
    const size_t blocks = size - (size % 8);
 
@@ -158,7 +154,7 @@ inline void bigint_cnd_addsub(word mask, word x[], const word y[], size_t size)
       borrow = word8_sub3(t1, x + i, y + i, borrow);
 
       for(size_t j = 0; j != 8; ++j)
-         x[i+j] = CT::select(mask, t0[j], t1[j]);
+         x[i+j] = mask.select(t0[j], t1[j]);
       }
 
    for(size_t i = blocks; i != size; ++i)
@@ -166,7 +162,7 @@ inline void bigint_cnd_addsub(word mask, word x[], const word y[], size_t size)
       const word a = word_add(x[i], y[i], &carry);
       const word s = word_sub(x[i], y[i], &borrow);
 
-      x[i] = CT::select(mask, a, s);
+      x[i] = mask.select(a, s);
       }
    }
 
@@ -179,7 +175,7 @@ inline void bigint_cnd_addsub(word mask, word x[], const word y[], size_t size)
 *
 * Returns the carry or borrow resp
 */
-inline word bigint_cnd_addsub(word mask, word x[],
+inline word bigint_cnd_addsub(CT::Mask<word> mask, word x[],
                               const word y[], const word z[],
                               size_t size)
    {
@@ -197,17 +193,17 @@ inline word bigint_cnd_addsub(word mask, word x[],
       borrow = word8_sub3(t1, x + i, z + i, borrow);
 
       for(size_t j = 0; j != 8; ++j)
-         x[i+j] = CT::select(mask, t0[j], t1[j]);
+         x[i+j] = mask.select(t0[j], t1[j]);
       }
 
    for(size_t i = blocks; i != size; ++i)
       {
       t0[0] = word_add(x[i], y[i], &carry);
       t1[0] = word_sub(x[i], z[i], &borrow);
-      x[i] = CT::select(mask, t0[0], t1[0]);
+      x[i] = mask.select(t0[0], t1[0]);
       }
 
-   return CT::select(mask, carry, borrow);
+   return mask.select(carry, borrow);
    }
 
 /*
@@ -217,13 +213,13 @@ inline word bigint_cnd_addsub(word mask, word x[],
 */
 inline void bigint_cnd_abs(word cnd, word x[], size_t size)
    {
-   const word mask = CT::expand_mask(cnd);
+   const auto mask = CT::Mask<word>::is_nonzero(cnd);
 
-   word carry = mask & 1;
+   word carry = mask.if_set_return(1);
    for(size_t i = 0; i != size; ++i)
       {
       const word z = word_add(~x[i], 0, &carry);
-      x[i] = CT::select(mask, z, x[i]);
+      x[i] = mask.select(z, x[i]);
       }
    }
 
@@ -379,9 +375,10 @@ inline word bigint_sub3(word z[],
 * @param N length of x and y
 * @param ws array of at least 2*N words
 */
-inline word bigint_sub_abs(word z[],
-                           const word x[], const word y[], size_t N,
-                           word ws[])
+inline CT::Mask<word>
+bigint_sub_abs(word z[],
+               const word x[], const word y[], size_t N,
+               word ws[])
    {
    // Subtract in both direction then conditional copy out the result
 

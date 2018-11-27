@@ -258,12 +258,24 @@ inline void cond_zero_mem(T cnd,
                           T* array,
                           size_t elems)
    {
+   #if 1
+   const T mask = CT::is_zero(cnd);
+
+   for(size_t i = 0; i != elems; ++i)
+      {
+      array[i] &= mask;
+      }
+   #else
+
+   // doesn't work. wtf?
    const auto mask = CT::Mask<T>::is_zero(cnd);
 
    for(size_t i = 0; i != elems; ++i)
       {
       array[i] = mask.if_set_return(array[i]);
       }
+
+   #endif
    }
 
 inline secure_vector<uint8_t> strip_leading_zeros(const uint8_t in[], size_t length)

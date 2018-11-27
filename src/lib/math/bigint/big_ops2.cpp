@@ -171,7 +171,7 @@ BigInt& BigInt::mod_sub(const BigInt& s, const BigInt& mod, secure_vector<word>&
       ws.resize(mod_sw);
 
    // is t < s or not?
-   const word is_lt = bigint_ct_is_lt(data(), mod_sw, s.data(), mod_sw);
+   const auto is_lt = bigint_ct_is_lt(data(), mod_sw, s.data(), mod_sw);
 
    // ws = p - s
    word borrow = bigint_sub3(ws.data(), mod.data(), mod_sw, s.data(), mod_sw);
@@ -179,7 +179,7 @@ BigInt& BigInt::mod_sub(const BigInt& s, const BigInt& mod, secure_vector<word>&
    BOTAN_ASSERT_NOMSG(borrow == 0);
 
    // Compute either (t - s) or (t + (p - s)) depending on mask
-   word carry = bigint_cnd_addsub(is_lt, mutable_data(), ws.data(), s.data(), mod_sw);
+   word carry = bigint_cnd_addsub(CT::Mask<word>::is_nonzero(is_lt), mutable_data(), ws.data(), s.data(), mod_sw);
    CT::unpoison(carry);
    BOTAN_ASSERT_NOMSG(carry == 0);
 

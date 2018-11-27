@@ -197,7 +197,7 @@ class Mask
 
       static Mask<T> is_less(T x, T y)
          {
-         return Mask<T>(is_less(x, y));
+         return Mask<T>(CT::is_less(x, y));
          }
 
       Mask<T>& operator&=(Mask<T> o) { m_mask &= o.value(); return (*this); }
@@ -277,28 +277,14 @@ inline Mask<T> conditional_copy_mem(T cnd,
    }
 
 template<typename T>
-inline void cond_zero_mem(T cnd,
+inline void cond_zero_mem(Mask<T> cnd,
                           T* array,
                           size_t elems)
    {
-   #if 1
-   const T mask = CT::is_zero(cnd);
-
    for(size_t i = 0; i != elems; ++i)
       {
-      array[i] &= mask;
+      array[i] = cnd.if_not_set_return(array[i]);
       }
-   #else
-
-   // doesn't work. wtf?
-   const auto mask = CT::Mask<T>::is_zero(cnd);
-
-   for(size_t i = 0; i != elems; ++i)
-      {
-      array[i] = mask.if_set_return(array[i]);
-      }
-
-   #endif
    }
 
 inline secure_vector<uint8_t> strip_leading_zeros(const uint8_t in[], size_t length)

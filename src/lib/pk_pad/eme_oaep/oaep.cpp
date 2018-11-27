@@ -135,7 +135,7 @@ oaep_find_delim(uint8_t& valid_mask,
    valid_mask = (~bad_input).value();
 
    secure_vector<uint8_t> output(input + delim_idx + 1, input + input_len);
-   CT::cond_zero_mem(bad_input.value(), output.data(), output.size());
+   CT::cond_zero_mem(bad_input, output.data(), output.size());
 
    return output;
    }

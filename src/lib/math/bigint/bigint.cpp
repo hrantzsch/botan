@@ -187,7 +187,7 @@ size_t BigInt::Data::calc_sig_words() const
    for(size_t i = 0; i != m_reg.size(); ++i)
       {
       const word w = m_reg[m_reg.size() - i - 1];
-      sub &= CT::is_zero(w);
+      sub &= CT::Mask<word>::is_zero(w).value();
       sig -= sub;
       }
 

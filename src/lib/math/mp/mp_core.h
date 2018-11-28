@@ -647,9 +647,7 @@ inline word bigint_ct_is_eq(const word x[], size_t x_size,
          diff |= x[i];
       }
 
-   const word is_equal = CT::is_zero(diff);
-   CT::unpoison(is_equal);
-   return is_equal;
+   return CT::Mask<word>::is_zero(diff).unpoisoned_value();
    }
 
 /**

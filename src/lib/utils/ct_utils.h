@@ -256,6 +256,13 @@ class Mask
             output[i] = this->select(x[i], y[i]);
          }
 
+      T unpoisoned_value() const
+         {
+         T r = value();
+         CT::unpoison(r);
+         return r;
+         }
+
       T value() const
          {
          return m_mask;

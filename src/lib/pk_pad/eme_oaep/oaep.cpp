@@ -72,7 +72,7 @@ secure_vector<uint8_t> OAEP::unpad(uint8_t& valid_mask,
    Therefore, the first byte can always be skipped safely.
    */
 
-   uint8_t skip_first = CT::is_zero<uint8_t>(in[0]) & 0x01;
+   const uint8_t skip_first = CT::Mask<uint8_t>::is_zero(in[0]).if_set_return(1);
 
    secure_vector<uint8_t> input(in + skip_first, in + in_length);
 

@@ -204,7 +204,7 @@ class Mask
             output[i] = this->select(x[i], y[i]);
          }
 
-      void if_set_zero(T buf[], size_t elems)
+      void if_set_zero_out(T buf[], size_t elems)
          {
          for(size_t i = 0; i != elems; ++i)
             {

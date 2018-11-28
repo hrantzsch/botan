@@ -107,14 +107,6 @@ inline constexpr T expand_mask(T x)
    }
 
 template<typename T>
-inline constexpr T select(T mask, T from0, T from1)
-   {
-   static_assert(std::is_unsigned<T>::value, "unsigned integer type required");
-   //return static_cast<T>((from0 & mask) | (from1 & ~mask));
-   return static_cast<T>(from1 ^ (mask & (from0 ^ from1)));
-   }
-
-template<typename T>
 inline constexpr T is_equal(T x, T y)
    {
    return is_zero<T>(x ^ y);
@@ -243,7 +235,11 @@ class Mask
          return ~m_mask & x;
          }
 
-      T select(T x, T y) const { return CT::select(m_mask, x, y); }
+      T select(T x, T y) const
+         {
+         // (x & value()) | (y & ~value())
+         return static_cast<T>(y ^ (value() & (x ^ y)));
+         }
 
       Mask<T> select_mask(Mask<T> x, Mask<T> y) const
          {
@@ -261,6 +257,11 @@ class Mask
          T r = value();
          CT::unpoison(r);
          return r;
+         }
+
+      bool is_set() const
+         {
+         return unpoisoned_value() != 0;
          }
 
       T value() const

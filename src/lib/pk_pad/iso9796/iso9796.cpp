@@ -209,7 +209,7 @@ bool iso9796_verification(const secure_vector<uint8_t>& const_coded,
    bad_input |= CT::Mask<uint8_t>::is_zero(ct_compare_u8(H3.data(), H2.data(), HASH_SIZE));
 
    CT::unpoison(bad_input);
-   return (bad_input.unpoisoned_value() == 0);
+   return (bad_input.is_set() == false);
    }
 
 }

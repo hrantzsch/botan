@@ -6,13 +6,13 @@
 * Wagner, Molnar, et al "The Program Counter Security Model"
 *
 * (C) 2010 Falko Strenzke
-* (C) 2015,2016 Jack Lloyd
+* (C) 2015,2016,2018 Jack Lloyd
 *
 * Botan is released under the Simplified BSD License (see license.txt)
 */
 
-#ifndef BOTAN_TIMING_ATTACK_CM_H_
-#define BOTAN_TIMING_ATTACK_CM_H_
+#ifndef BOTAN_CT_UTILS_H_
+#define BOTAN_CT_UTILS_H_
 
 #include <botan/secmem.h>
 #include <type_traits>
@@ -277,19 +277,6 @@ inline secure_vector<uint8_t> strip_leading_zeros(const uint8_t in[], size_t len
 inline secure_vector<uint8_t> strip_leading_zeros(const secure_vector<uint8_t>& in)
    {
    return strip_leading_zeros(in.data(), in.size());
-   }
-
-// REMOVE THESE:
-template<typename T>
-inline T is_less(T a, T b)
-   {
-   return CT::Mask<T>::is_lt(a, b).value();
-   }
-
-template<typename T>
-inline constexpr T is_zero(T x)
-   {
-   return CT::Mask<T>::is_zero(x).value();
    }
 
 }

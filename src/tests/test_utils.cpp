@@ -88,31 +88,31 @@ class Utility_Function_Tests final : public Text_Based_Test
          {
          Test::Result result("CT utils");
 
-         result.test_eq_sz("CT::is_zero8", Botan::CT::is_zero<uint8_t>(0), 0xFF);
-         result.test_eq_sz("CT::is_zero8", Botan::CT::is_zero<uint8_t>(1), 0x00);
-         result.test_eq_sz("CT::is_zero8", Botan::CT::is_zero<uint8_t>(0xFF), 0x00);
+         result.test_eq_sz("CT::is_zero8", Botan::CT::Mask<uint8_t>::is_zero(0).value(), 0xFF);
+         result.test_eq_sz("CT::is_zero8", Botan::CT::Mask<uint8_t>::is_zero(1).value(), 0x00);
+         result.test_eq_sz("CT::is_zero8", Botan::CT::Mask<uint8_t>::is_zero(0xFF).value(), 0x00);
 
-         result.test_eq_sz("CT::is_zero16", Botan::CT::is_zero<uint16_t>(0), 0xFFFF);
-         result.test_eq_sz("CT::is_zero16", Botan::CT::is_zero<uint16_t>(1), 0x0000);
-         result.test_eq_sz("CT::is_zero16", Botan::CT::is_zero<uint16_t>(0xFF), 0x0000);
+         result.test_eq_sz("CT::is_zero16", Botan::CT::Mask<uint16_t>::is_zero(0).value(), 0xFFFF);
+         result.test_eq_sz("CT::is_zero16", Botan::CT::Mask<uint16_t>::is_zero(1).value(), 0x0000);
+         result.test_eq_sz("CT::is_zero16", Botan::CT::Mask<uint16_t>::is_zero(0xFF).value(), 0x0000);
 
-         result.test_eq_sz("CT::is_zero32", Botan::CT::is_zero<uint32_t>(0), 0xFFFFFFFF);
-         result.test_eq_sz("CT::is_zero32", Botan::CT::is_zero<uint32_t>(1), 0x00000000);
-         result.test_eq_sz("CT::is_zero32", Botan::CT::is_zero<uint32_t>(0xFF), 0x00000000);
+         result.test_eq_sz("CT::is_zero32", Botan::CT::Mask<uint32_t>::is_zero(0).value(), 0xFFFFFFFF);
+         result.test_eq_sz("CT::is_zero32", Botan::CT::Mask<uint32_t>::is_zero(1).value(), 0x00000000);
+         result.test_eq_sz("CT::is_zero32", Botan::CT::Mask<uint32_t>::is_zero(0xFF).value(), 0x00000000);
 
-         result.test_eq_sz("CT::is_less8", Botan::CT::is_less<uint8_t>(0, 1), 0xFF);
-         result.test_eq_sz("CT::is_less8", Botan::CT::is_less<uint8_t>(1, 0), 0x00);
-         result.test_eq_sz("CT::is_less8", Botan::CT::is_less<uint8_t>(0xFF, 5), 0x00);
+         result.test_eq_sz("CT::is_less8", Botan::CT::Mask<uint8_t>::is_lt(0, 1).value(), 0xFF);
+         result.test_eq_sz("CT::is_less8", Botan::CT::Mask<uint8_t>::is_lt(1, 0).value(), 0x00);
+         result.test_eq_sz("CT::is_less8", Botan::CT::Mask<uint8_t>::is_lt(0xFF, 5).value(), 0x00);
 
-         result.test_eq_sz("CT::is_less16", Botan::CT::is_less<uint16_t>(0, 1), 0xFFFF);
-         result.test_eq_sz("CT::is_less16", Botan::CT::is_less<uint16_t>(1, 0), 0x0000);
-         result.test_eq_sz("CT::is_less16", Botan::CT::is_less<uint16_t>(0xFFFF, 5), 0x0000);
+         result.test_eq_sz("CT::is_less16", Botan::CT::Mask<uint16_t>::is_lt(0, 1).value(), 0xFFFF);
+         result.test_eq_sz("CT::is_less16", Botan::CT::Mask<uint16_t>::is_lt(1, 0).value(), 0x0000);
+         result.test_eq_sz("CT::is_less16", Botan::CT::Mask<uint16_t>::is_lt(0xFFFF, 5).value(), 0x0000);
 
-         result.test_eq_sz("CT::is_less32", Botan::CT::is_less<uint32_t>(0, 1), 0xFFFFFFFF);
-         result.test_eq_sz("CT::is_less32", Botan::CT::is_less<uint32_t>(1, 0), 0x00000000);
-         result.test_eq_sz("CT::is_less32", Botan::CT::is_less<uint32_t>(0xFFFF5, 5), 0x00000000);
-         result.test_eq_sz("CT::is_less32", Botan::CT::is_less<uint32_t>(0xFFFFFFFF, 5), 0x00000000);
-         result.test_eq_sz("CT::is_less32", Botan::CT::is_less<uint32_t>(5, 0xFFFFFFFF), 0xFFFFFFFF);
+         result.test_eq_sz("CT::is_less32", Botan::CT::Mask<uint32_t>::is_lt(0, 1).value(), 0xFFFFFFFF);
+         result.test_eq_sz("CT::is_less32", Botan::CT::Mask<uint32_t>::is_lt(1, 0).value(), 0x00000000);
+         result.test_eq_sz("CT::is_less32", Botan::CT::Mask<uint32_t>::is_lt(0xFFFF5, 5).value(), 0x00000000);
+         result.test_eq_sz("CT::is_less32", Botan::CT::Mask<uint32_t>::is_lt(0xFFFFFFFF, 5).value(), 0x00000000);
+         result.test_eq_sz("CT::is_less32", Botan::CT::Mask<uint32_t>::is_lt(5, 0xFFFFFFFF).value(), 0xFFFFFFFF);
 
          return result;
          }

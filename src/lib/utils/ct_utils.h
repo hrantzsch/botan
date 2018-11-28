@@ -75,6 +75,13 @@ inline void unpoison(T& p)
 #endif
    }
 
+/**
+* TODO
+* - new test suite
+* - doc comments
+* - document in manual?
+* - run valgrind tests fix missing annotations
+*/
 template<typename T>
 class Mask
    {

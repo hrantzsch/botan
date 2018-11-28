@@ -126,8 +126,7 @@ oaep_find_delim(uint8_t& valid_mask,
    bad_input |= waiting_for_delim;
    bad_input |= CT::Mask<uint8_t>::is_zero(ct_compare_u8(&input[hlen], Phash.data(), hlen));
 
-   //delim_idx &= ~bad_input.resize_mask_to<size_t>();
-   delim_idx &= ~CT::expand_mask<size_t>(bad_input.value());
+   delim_idx = CT::Mask<size_t>::expand(bad_input.value()).if_not_set_return(delim_idx);
 
    CT::unpoison(input, input_len);
    CT::unpoison(&bad_input, 1);
@@ -136,7 +135,7 @@ oaep_find_delim(uint8_t& valid_mask,
    valid_mask = (~bad_input).value();
 
    secure_vector<uint8_t> output(input + delim_idx + 1, input + input_len);
-   CT::cond_zero_mem(bad_input, output.data(), output.size());
+   bad_input.cond_zero_mem(output.data(), output.size());
 
    return output;
    }

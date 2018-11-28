@@ -337,7 +337,7 @@ void TLS_CBC_HMAC_AEAD_Decryption::perform_additional_compressions(size_t plen, 
    const uint16_t current_compressions = ((L2 + block_size - 1 - max_bytes_in_first_block) / block_size);
    // number of additional compressions we have to perform
    const uint16_t add_compressions = max_compresssions - current_compressions;
-   const uint8_t equal = CT::is_equal(max_compresssions, current_compressions) & 0x01;
+   const uint8_t equal = CT::Mask<uint16_t>::is_equal(max_compresssions, current_compressions).if_set_return(1);
    // We compute the data length we need to achieve the number of compressions.
    // If there are no compressions, we just add 55/111 dummy bytes so that no
    // compression is performed.
@@ -418,8 +418,8 @@ void TLS_CBC_HMAC_AEAD_Decryption::finish(secure_vector<uint8_t>& buffer, size_t
       (sending empty records, instead of 1/(n-1) splitting)
       */
 
-      const uint16_t size_ok_mask = CT::is_lte<uint16_t>(static_cast<uint16_t>(tag_size() + pad_size), static_cast<uint16_t>(record_len));
-      pad_size &= size_ok_mask;
+      const auto size_ok_mask = CT::Mask<uint16_t>::is_lte(tag_size() + pad_size, record_len);
+      pad_size = size_ok_mask.if_set_return(pad_size);
 
       CT::unpoison(record_contents, record_len);
 
@@ -442,11 +442,11 @@ void TLS_CBC_HMAC_AEAD_Decryption::finish(secure_vector<uint8_t>& buffer, size_t
 
       const bool mac_ok = constant_time_compare(&record_contents[mac_offset], mac_buf.data(), tag_size());
 
-      const uint16_t ok_mask = size_ok_mask & CT::expand_mask<uint16_t>(mac_ok) & CT::expand_mask<uint16_t>(pad_size);
+      const auto ok_mask = size_ok_mask & CT::Mask<uint16_t>::expand(mac_ok) & CT::Mask<uint16_t>::expand(pad_size);
 
       CT::unpoison(ok_mask);
 
-      if(ok_mask)
+      if(ok_mask.is_set())
          {
          buffer.insert(buffer.end(), plaintext_block, plaintext_block + plaintext_length);
          }

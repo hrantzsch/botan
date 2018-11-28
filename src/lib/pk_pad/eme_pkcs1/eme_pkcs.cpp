@@ -83,7 +83,7 @@ secure_vector<uint8_t> EME_PKCS1v15::unpad(uint8_t& valid_mask,
    CT::unpoison(delim_idx);
 
    secure_vector<uint8_t> output(&in[delim_idx + 2], &in[inlen]);
-   CT::cond_zero_mem(bad_input_m, output.data(), output.size());
+   bad_input_m.if_set_zero(output.data(), output.size());
    valid_mask = ~bad_input_m.value();
    return output;
    }

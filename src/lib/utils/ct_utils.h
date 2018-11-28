@@ -75,55 +75,6 @@ inline void unpoison(T& p)
 #endif
    }
 
-/* Mask generation */
-
-template<typename T>
-inline constexpr T expand_top_bit(T a)
-   {
-   static_assert(std::is_unsigned<T>::value, "unsigned integer type required");
-   return static_cast<T>(0) - (a >> (sizeof(T)*8-1));
-   }
-
-template<typename T>
-inline constexpr T is_zero(T x)
-   {
-   static_assert(std::is_unsigned<T>::value, "unsigned integer type required");
-   return expand_top_bit<T>(~x & (x - 1));
-   }
-
-/*
-* T should be an unsigned machine integer type
-* Expand to a mask used for other operations
-* @param in an integer
-* @return If n is zero, returns zero. Otherwise
-* returns a T with all bits set for use as a mask with
-* select.
-*/
-template<typename T>
-inline constexpr T expand_mask(T x)
-   {
-   static_assert(std::is_unsigned<T>::value, "unsigned integer type required");
-   return ~is_zero(x);
-   }
-
-template<typename T>
-inline constexpr T is_equal(T x, T y)
-   {
-   return is_zero<T>(x ^ y);
-   }
-
-template<typename T>
-inline constexpr T is_less(T a, T b)
-   {
-   return expand_top_bit<T>(a ^ ((a^b) | ((a-b)^a)));
-   }
-
-template<typename T>
-inline constexpr T is_lte(T a, T b)
-   {
-   return CT::is_less(a, b) | CT::is_equal(a, b);
-   }
-
 template<typename T>
 class Mask
    {
@@ -134,8 +85,9 @@ class Mask
       Mask<T>& operator=(const Mask<T>& other) = default;
 
       template<typename U>
-      Mask(Mask<U> o) : m_mask(CT::expand_mask(o.value()))
+      Mask(Mask<U> o) : m_mask(o.value())
          {
+         static_assert(sizeof(U) > sizeof(T), "sizes ok");
          }
 
       static Mask<T> set()
@@ -150,19 +102,19 @@ class Mask
 
       static Mask<T> expand(T v)
          {
-         return Mask<T>(expand_mask(v));
+         return ~Mask<T>::is_zero(v);
          }
 
       static Mask<T> is_zero(T x)
          {
-         return Mask<T>(CT::is_zero(x));
+         return Mask<T>(expand_top_bit(~x & (x - 1)));
          }
 
       template<typename U>
       static Mask<T> is_zero(U x)
          {
          static_assert(sizeof(U) > sizeof(T), "sizes ok");
-         return Mask<T>(static_cast<T>(CT::is_zero<U>(x)));
+         return Mask<T>(Mask<U>::is_zero(x));
          }
 
       static Mask<T> is_nonzero(T v)
@@ -172,12 +124,12 @@ class Mask
 
       static Mask<T> is_equal(T x, T y)
          {
-         return Mask<T>(CT::is_equal(x, y));
+         return Mask<T>::is_zero(static_cast<T>(x ^ y));
          }
 
       static Mask<T> is_lt(T x, T y)
          {
-         return Mask<T>(CT::is_less(x, y));
+         return Mask<T>(expand_top_bit(x^((x^y) | ((x-y)^x))));
          }
 
       static Mask<T> is_gt(T x, T y)
@@ -252,6 +204,14 @@ class Mask
             output[i] = this->select(x[i], y[i]);
          }
 
+      void if_set_zero(T buf[], size_t elems)
+         {
+         for(size_t i = 0; i != elems; ++i)
+            {
+            buf[i] = this->if_not_set_return(buf[i]);
+            }
+         }
+
       T unpoisoned_value() const
          {
          T r = value();
@@ -270,6 +230,11 @@ class Mask
          }
 
    private:
+      static T expand_top_bit(T a)
+         {
+         return static_cast<T>(0) - (a >> (sizeof(T)*8-1));
+         }
+
       Mask(T m) : m_mask(m) {}
 
       T m_mask;
@@ -285,17 +250,6 @@ inline Mask<T> conditional_copy_mem(T cnd,
    const auto mask = CT::Mask<T>::is_nonzero(cnd);
    mask.select_n(to, from0, from1, elems);
    return mask;
-   }
-
-template<typename T>
-inline void cond_zero_mem(Mask<T> cnd,
-                          T* array,
-                          size_t elems)
-   {
-   for(size_t i = 0; i != elems; ++i)
-      {
-      array[i] = cnd.if_not_set_return(array[i]);
-      }
    }
 
 inline secure_vector<uint8_t> strip_leading_zeros(const uint8_t in[], size_t length)
@@ -316,6 +270,19 @@ inline secure_vector<uint8_t> strip_leading_zeros(const uint8_t in[], size_t len
 inline secure_vector<uint8_t> strip_leading_zeros(const secure_vector<uint8_t>& in)
    {
    return strip_leading_zeros(in.data(), in.size());
+   }
+
+// REMOVE THESE:
+template<typename T>
+inline T is_less(T a, T b)
+   {
+   return CT::Mask<T>::is_lt(a, b).value();
+   }
+
+template<typename T>
+inline constexpr T is_zero(T x)
+   {
+   return CT::Mask<T>::is_zero(x).value();
    }
 
 }

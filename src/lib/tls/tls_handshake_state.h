@@ -81,13 +81,13 @@ class Handshake_State
 
       std::vector<uint8_t> session_ticket() const;
 
-      std::pair<std::string, Signature_Format>
+      std::pair<Signature_Scheme , Signature_Format>
          parse_sig_format(const Public_Key& key,
                           Signature_Scheme scheme,
                           bool for_client_auth,
                           const Policy& policy) const;
 
-      std::pair<std::string, Signature_Format>
+      std::pair<Signature_Scheme, Signature_Format>
          choose_sig_format(const Private_Key& key,
                            Signature_Scheme& scheme,
                            bool for_client_auth,

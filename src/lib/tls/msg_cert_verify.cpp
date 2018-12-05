@@ -27,7 +27,7 @@ Certificate_Verify::Certificate_Verify(Handshake_IO& io,
    {
    BOTAN_ASSERT_NONNULL(priv_key);
 
-   std::pair<std::string, Signature_Format> format =
+   std::pair<Signature_Scheme, Signature_Format> format =
       state.choose_sig_format(*priv_key, m_scheme, true, policy);
 
    m_signature =
@@ -86,7 +86,7 @@ bool Certificate_Verify::verify(const X509_Certificate& cert,
 
    policy.check_peer_key_acceptable(*key);
 
-   std::pair<std::string, Signature_Format> format =
+   std::pair<Signature_Scheme, Signature_Format> format =
       state.parse_sig_format(*key.get(), m_scheme, true, policy);
 
    const bool signature_valid =

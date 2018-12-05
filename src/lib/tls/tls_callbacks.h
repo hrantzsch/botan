@@ -163,6 +163,13 @@ class BOTAN_PUBLIC_API(2,0) Callbacks
           Signature_Format format,
           const std::vector<uint8_t>& msg);
 
+       virtual std::vector<uint8_t> tls_sign_message(
+          const Private_Key& key,
+          RandomNumberGenerator& rng,
+          TLS::Signature_Scheme emsa,
+          Signature_Format format,
+          const std::vector<uint8_t>& msg);
+
        /**
        * Optional callback with default impl: verify a message signature
        *
@@ -180,6 +187,13 @@ class BOTAN_PUBLIC_API(2,0) Callbacks
        virtual bool tls_verify_message(
           const Public_Key& key,
           const std::string& emsa,
+          Signature_Format format,
+          const std::vector<uint8_t>& msg,
+          const std::vector<uint8_t>& sig);
+
+       virtual bool tls_verify_message(
+          const Public_Key& key,
+          TLS::Signature_Scheme emsa,
           Signature_Format format,
           const std::vector<uint8_t>& msg,
           const std::vector<uint8_t>& sig);

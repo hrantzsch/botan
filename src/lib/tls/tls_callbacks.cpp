@@ -13,6 +13,7 @@
 #include <botan/ocsp.h>
 #include <botan/dh.h>
 #include <botan/ecdh.h>
+#include <botan/emsa.h>
 #include <botan/oids.h>
 #include <botan/tls_exceptn.h>
 #include <botan/internal/ct_utils.h>
@@ -80,6 +81,20 @@ void TLS::Callbacks::tls_verify_cert_chain(
 std::vector<uint8_t> TLS::Callbacks::tls_sign_message(
    const Private_Key& key,
    RandomNumberGenerator& rng,
+   TLS::Signature_Scheme emsa,
+   Signature_Format format,
+   const std::vector<uint8_t>& msg)
+   {
+   Botan::EMSA *emsaObject = Botan::get_emsa(padding_string_for_scheme(emsa));
+   const auto   name       = emsaObject->name();
+   delete emsaObject;
+
+   return this->tls_sign_message(key, rng, name, format, msg);
+   }
+
+std::vector<uint8_t> TLS::Callbacks::tls_sign_message(
+   const Private_Key& key,
+   RandomNumberGenerator& rng,
    const std::string& emsa,
    Signature_Format format,
    const std::vector<uint8_t>& msg)
@@ -87,6 +102,20 @@ std::vector<uint8_t> TLS::Callbacks::tls_sign_message(
    PK_Signer signer(key, rng, emsa, format);
 
    return signer.sign_message(msg, rng);
+   }
+
+bool TLS::Callbacks::tls_verify_message(
+   const Public_Key& key,
+   TLS::Signature_Scheme emsa,
+   Signature_Format format,
+   const std::vector<uint8_t>& msg,
+   const std::vector<uint8_t>& sig)
+   {
+   Botan::EMSA *emsaObject = Botan::get_emsa(padding_string_for_scheme(emsa));
+   const auto   name       = emsaObject->name();
+   delete emsaObject;
+
+   return this->tls_verify_message(key, name, format, msg, sig);
    }
 
 bool TLS::Callbacks::tls_verify_message(

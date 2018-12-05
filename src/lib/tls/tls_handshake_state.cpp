@@ -373,7 +373,7 @@ KDF* Handshake_State::protocol_specific_prf() const
    return get_kdf("TLS-PRF");
    }
 
-std::pair<std::string, Signature_Format>
+std::pair<Signature_Scheme, Signature_Format>
 Handshake_State::choose_sig_format(const Private_Key& key,
                                    Signature_Scheme& chosen_scheme,
                                    bool for_client_auth,
@@ -423,24 +423,26 @@ Handshake_State::choose_sig_format(const Private_Key& key,
 
       if(sig_algo == "RSA")
          {
-         return std::make_pair(padding_string_for_scheme(chosen_scheme), IEEE_1363);
+         return std::make_pair(chosen_scheme, IEEE_1363);
          }
       else if(sig_algo == "DSA" || sig_algo == "ECDSA")
          {
-         return std::make_pair(padding_string_for_scheme(chosen_scheme), DER_SEQUENCE);
+         return std::make_pair(chosen_scheme, DER_SEQUENCE);
          }
       }
    else
       {
       if(sig_algo == "RSA")
          {
-         const std::string padding = "PKCS1v15(Parallel(MD5,SHA-160))";
-         return std::make_pair(padding, IEEE_1363);
+         return std::make_pair(Signature_Scheme::RSA_PKCS1_SHA1, IEEE_1363);
          }
-      else if(sig_algo == "DSA" || sig_algo == "ECDSA")
+      else if(sig_algo == "DSA")
          {
-         const std::string padding = "EMSA1(SHA-1)";
-         return std::make_pair(padding, DER_SEQUENCE);
+         return std::make_pair(Signature_Scheme::DSA_SHA1, DER_SEQUENCE);
+         }
+      else if (sig_algo == "ECDSA")
+         {
+         return std::make_pair(Signature_Scheme::ECDSA_SHA1, DER_SEQUENCE);
          }
       }
 
@@ -469,7 +471,7 @@ bool supported_algos_include(
 
 }
 
-std::pair<std::string, Signature_Format>
+std::pair<Signature_Scheme, Signature_Format>
 Handshake_State::parse_sig_format(const Public_Key& key,
                                   Signature_Scheme scheme,
                                   bool for_client_auth,
@@ -495,13 +497,15 @@ Handshake_State::parse_sig_format(const Public_Key& key,
 
       if(key_type == "RSA")
          {
-         const std::string padding = "PKCS1v15(Parallel(MD5,SHA-160))";
-         return std::make_pair(padding, IEEE_1363);
+         return std::make_pair(Signature_Scheme::RSA_PKCS1_SHA1, IEEE_1363);
          }
-      else if(key_type == "DSA" || key_type == "ECDSA")
+      else if(key_type == "DSA")
          {
-         const std::string padding = "EMSA1(SHA-1)";
-         return std::make_pair(padding, DER_SEQUENCE);
+         return std::make_pair(Signature_Scheme::DSA_SHA1, DER_SEQUENCE);
+         }
+      else if (key_type == "ECDSA")
+         {
+         return std::make_pair(Signature_Scheme::ECDSA_SHA1, DER_SEQUENCE);
          }
       else
          throw Invalid_Argument(key_type + " is invalid/unknown for TLS signatures");
@@ -539,11 +543,11 @@ Handshake_State::parse_sig_format(const Public_Key& key,
 
    if(key_type == "RSA")
       {
-      return std::make_pair(padding_string_for_scheme(scheme), IEEE_1363);
+      return std::make_pair(scheme, IEEE_1363);
       }
    else if(key_type == "DSA" || key_type == "ECDSA")
       {
-      return std::make_pair(padding_string_for_scheme(scheme), DER_SEQUENCE);
+      return std::make_pair(scheme, DER_SEQUENCE);
       }
 
    throw Invalid_Argument(key_type + " is invalid/unknown for TLS signatures");

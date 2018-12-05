@@ -187,7 +187,7 @@ Server_Key_Exchange::Server_Key_Exchange(Handshake_IO& io,
       {
       BOTAN_ASSERT(signing_key, "Signing key was set");
 
-      std::pair<std::string, Signature_Format> format =
+      std::pair<TLS::Signature_Scheme, Signature_Format> format =
          state.choose_sig_format(*signing_key, m_scheme, false, policy);
 
       std::vector<uint8_t> buf = state.client_hello()->random();
@@ -303,7 +303,7 @@ bool Server_Key_Exchange::verify(const Public_Key& server_key,
    {
    policy.check_peer_key_acceptable(server_key);
 
-   std::pair<std::string, Signature_Format> format =
+   std::pair<TLS::Signature_Scheme, Signature_Format> format =
       state.parse_sig_format(server_key, m_scheme, false, policy);
 
    std::vector<uint8_t> buf = state.client_hello()->random();

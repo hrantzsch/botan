@@ -11,6 +11,7 @@
 
 #if defined(BOTAN_HAS_RSA)
 
+#include <botan/emsa.h>
 #include <botan/internal/p11_mechanism.h>
 #include <botan/pk_ops.h>
 #include <botan/rng.h>
@@ -206,9 +207,10 @@ class PKCS11_RSA_Signature_Operation final : public PK_Ops::Signature
    {
    public:
 
-      PKCS11_RSA_Signature_Operation(const PKCS11_RSA_PrivateKey& key, const std::string& padding)
-         : m_key(key), m_mechanism(MechanismWrapper::create_rsa_sign_mechanism(padding))
-         {}
+      PKCS11_RSA_Signature_Operation(const PKCS11_RSA_PrivateKey& key, const std::string& padding) :
+          m_key(key),
+          m_emsa(get_emsa(padding)),
+          m_mechanism(MechanismWrapper::create_rsa_sign_mechanism(m_emsa->name())) {}
 
       size_t signature_length() const override { return m_key.get_n().bytes(); }
 
@@ -255,6 +257,7 @@ class PKCS11_RSA_Signature_Operation final : public PK_Ops::Signature
       const PKCS11_RSA_PrivateKey& m_key;
       bool m_initialized = false;
       secure_vector<uint8_t> m_first_message;
+      std::unique_ptr<EMSA> m_emsa;
       MechanismWrapper m_mechanism;
    };
 

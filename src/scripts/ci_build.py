@@ -26,8 +26,8 @@ def get_concurrency():
     except ImportError:
         return def_concurrency
 
-def determine_flags(target, target_os, target_cpu, target_cc, cc_bin,
-                    ccache, root_dir, pkcs11_lib, use_gdb, disable_werror):
+def determine_flags(target, target_os, target_cpu, target_cc, cc_bin, ccache, root_dir, pkcs11_lib,
+                    use_gdb, disable_werror, extra_cxxflags):
     # pylint: disable=too-many-branches,too-many-statements,too-many-arguments,too-many-locals
 
     """
@@ -281,6 +281,9 @@ def determine_flags(target, target_os, target_cpu, target_cc, cc_bin,
         build_targets += ['static', 'shared'] if target_os != 'windows' else ['shared']
     flags += ['--build-targets=%s' % ','.join(build_targets)]
 
+    if extra_cxxflags is not None:
+        flags += ['--extra-cxxflags=\"%s\"' % extra_cxxflags]
+
     return flags, run_test_command, make_prefix
 
 def run_cmd(cmd, root_dir):
@@ -384,6 +387,9 @@ def parse_args(args):
 
     parser.add_option('--run-under-gdb', dest='use_gdb', action='store_true', default=False,
                       help='Run test suite under gdb and capture backtrace')
+
+    parser.add_option('--extra-cxxflags', dest='extra_cxxflags', default=None,
+                      help='Set extra compiler flags')
 
     return parser.parse_args(args)
 
@@ -506,7 +512,8 @@ def main(args=None):
         config_flags, run_test_command, make_prefix = determine_flags(
             target, options.os, options.cpu, options.cc,
             options.cc_bin, options.compiler_cache, root_dir,
-            options.pkcs11_lib, options.use_gdb, options.disable_werror)
+            options.pkcs11_lib, options.use_gdb, options.disable_werror,
+            options.extra_cxxflags)
 
         cmds.append([py_interp, os.path.join(root_dir, 'configure.py')] + config_flags)
 

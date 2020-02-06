@@ -50,6 +50,18 @@ environment:
       MAKE_TOOL: jom
       TARGET_CC: msvc
 
+    # MSVC 2017 DLL x86-64 with unicode
+    - CC: VC2017
+      PLATFORM: x86_amd64
+      TARGET: shared
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      BOOST_ROOT: "C:\\Libraries\\boost_1_69_0"
+      BOOST_LIBRARYDIR: "C:\\Libraries\\boost_1_69_0\\lib64-msvc-14.1"
+      BOOST_SYSTEM_LIBRARY: "libboost_system-vc141-mt-x64-1_69"
+      MAKE_TOOL: jom
+      TARGET_CC: msvc
+      EXTRA_FLAGS: "--extra-cxxflags=\"-DUNICODE -D_UNICODE\""
+
     # MSVC 2017 static x86-64
     - CC: VC2017
       PLATFORM: x86_amd64

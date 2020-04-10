@@ -19,6 +19,10 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then
         sudo apt-get -qq update
         sudo apt-get install g++-4.8
 
+    elif [ "$TARGET" = "gcc4.8-amalgamation" ]; then
+        sudo apt-get -qq update
+        sudo apt-get install g++-4.8
+
     elif [ "$TARGET" = "clang8" ]; then
         sudo apt-get -qq update
         sudo apt-get install clang-8

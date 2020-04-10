@@ -102,7 +102,7 @@ def determine_flags(target, target_os, target_cpu, target_cc, cc_bin,
     if target in ['mini-static', 'mini-shared']:
         flags += ['--minimized-build', '--enable-modules=system_rng,sha2_32,sha2_64,aes']
 
-    if target == 'static':
+    if target == 'static' or 'amalgamation' in target:
         # Arbitrarily test amalgamation with the static lib builds
         flags += ['--amalgamation']
 

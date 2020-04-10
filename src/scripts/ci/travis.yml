@@ -135,6 +135,14 @@ jobs:
 
     - os: linux
       dist: bionic
+      name: Linux GCC 4.8
+      compiler: gcc
+      env:
+       - TARGET="gcc4.8-amalgamation"
+       - EXTRA_FLAGS="--disable-werror"
+
+    - os: linux
+      dist: bionic
       name: Linux Clang 8
       compiler: clang
       env:

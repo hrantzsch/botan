@@ -204,6 +204,7 @@ branches:
     - master
     - release-2
     - coverity_scan
+    - ci/gcc48amalgamation
 
 git:
   depth: 10

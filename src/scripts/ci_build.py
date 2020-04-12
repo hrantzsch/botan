@@ -102,9 +102,12 @@ def determine_flags(target, target_os, target_cpu, target_cc, cc_bin,
     if target in ['mini-static', 'mini-shared']:
         flags += ['--minimized-build', '--enable-modules=system_rng,sha2_32,sha2_64,aes']
 
-    if target == 'static' or 'amalgamation' in target:
+    if target == 'static':
         # Arbitrarily test amalgamation with the static lib builds
         flags += ['--amalgamation']
+
+    if target == "no_aes_ni":
+        flags += ['--disable-modules=aes_ni']
 
     if target in ['bsi', 'nist']:
         # Arbitrarily test disable static on module policy builds

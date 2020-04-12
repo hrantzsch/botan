@@ -27,7 +27,7 @@ def get_concurrency():
         return def_concurrency
 
 def build_targets(target, target_os):
-    if target in ['shared', 'mini-shared', 'bsi', 'nist']:
+    if target in ['shared', 'mini-shared', 'bsi', 'nist', 'no_aes_ni']:
         yield 'shared'
     elif target in ['static', 'mini-static', 'fuzzers', 'baremetal']:
         yield 'static'

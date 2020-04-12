@@ -10,20 +10,26 @@ env:
 jobs:
   include:
     - os: osx
-      name: macOS
+      name: xcode93
       compiler: clang
+      osx_image: xcode9.3
+
+    - os: osx
+      name: xcode93_no_aes_ni
+      compiler: clang
+      osx_image: xcode9.3
       env:
-       - TARGET="shared"
+       - TARGET="no_aes_ni"
 
     - os: osx
-      name: macOS
+      name: xcode92
       compiler: clang
-      osx_image: xcode9.4
+      osx_image: xcode9.2
 
     - os: osx
-      name: macOS
+      name: xcode92_no_aes_ni
       compiler: clang
-      osx_image: xcode9.4
+      osx_image: xcode9.2
       env:
        - TARGET="no_aes_ni"
 
